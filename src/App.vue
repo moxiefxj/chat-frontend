@@ -28,6 +28,7 @@ export default {
       ischat:false,
       touser:null,
       unreadlist:[],
+
     }
   },
   // async:异步操作
@@ -65,7 +66,22 @@ export default {
       data.forEach((item,index) => {
         // 设置未读的红点
         // 将聊天的内容分别添加到本地存储
-        this.unreadlist.push(item.sendname) 
+        // 将sendname/toname改成由头像的对象
+        item.sendname = this.userObj[item.sendname]
+        item.toname = this.userObj[item.toname]
+
+        this.unreadlist.push(item.sendname)
+        
+        let strKey = 'chat-user-'+this.$root.me.username+'-'+item.sendname.username
+        // 先解析本地存储的数据，在添加
+        // 解析：JSON.parse(localStorage[strKey]).push(item);
+        // console.log(localStorage[strKey])
+        localStorage[strKey] = localStorage[strKey]?localStorage[strKey]:'[]'
+        let newArr = JSON.parse(localStorage[strKey])
+        newArr.push(item)
+        localStorage[strKey] = JSON.stringify(newArr);
+        console.log(this.userObj)
+     
       });
     })
   },
@@ -76,6 +92,15 @@ export default {
     },
     closeChat:function(){
       this.ischat = false
+    }
+  },
+  computed: {
+    userObj:function(){
+      let obj = {}
+      this.users.forEach((item,index)=>{
+        obj[item.username] = item
+      })
+      return obj;
     }
   },
 

@@ -47,7 +47,7 @@ export default {
         height: 10px;
         border-radius: 5px;
         background: red;
-        bottom: 5px;
+        bottom: 20px;
         right: 5px;
 
     }

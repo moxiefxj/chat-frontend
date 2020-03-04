@@ -40,18 +40,21 @@ export default {
                 content:this.inputData,
                 chattime:new Date().getTime(),
             }
+            
             // 发送到服务端
             socket.emit('sendMsg',msg)
             this.chatlist.push(msg)
             // 保存聊天记录到本地
             this.saveStorage()
         },
+        // 保存到本地
         saveStorage(){
             let strKey = 'chat-user-'+this.$root.me.username+'-'+this.touser.username
             localStorage[strKey] = JSON.stringify(this .chatlist) 
         },
         getStorage(){
             let strKey = 'chat-user-'+this.$root.me.username+'-'+this.touser.username
+            localStorage[strKey] = localStorage[strKey]?localStorage[strKey]:'[]'
             this.chatlist = JSON.parse(localStorage[strKey]) 
         }
     },
