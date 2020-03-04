@@ -1,5 +1,5 @@
 # wxchat
-
+这是群聊
 ## Project setup
 ```
 npm install
