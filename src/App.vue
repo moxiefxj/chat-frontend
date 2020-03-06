@@ -66,11 +66,11 @@ export default {
     socket.on('unreadMsg',(data)=>{
       data.forEach((item,index) => {
         // 设置未读的红点
-        // 将聊天的内容分别添加到本地存储
+        // 将聊天的内容分别添加到本地存储 
         // 将sendid/toid改成由头像的对象
         item.sendid = this.userObj[item.sendid]
         item.toid = this.userObj[item.toid]
-        this.unreadlist.push(item.sendid)
+        this.unreadlist.push(item.sendid.id)
         
         let strKey = 'chat-user-'+this.$root.me.id+'-'+item.sendid.id
         // 先解析本地存储的数据，在添加
@@ -84,14 +84,16 @@ export default {
     })
 
     socket.on('accept',(msg)=>{
-      console.log(msg)
+      
       // 判断是否在当前聊天页面且对象一致
       if(this.ischat ==true && msg.sendid.id ==this.touser.id){
         this.newMsg = msg
       }
-      // else if(msg.toid.username == this.touser.username && msg.toid.isgroup=='true'){
-      //   this.newMsg = msg
-      // }
+      else if(this.ischat==true && msg.toid.isgroup=='true'){
+        console.log(msg)
+        this.newMsg = msg
+      }
+      // 聊天对象不一致时
       else{
 
         let strKey = 'chat-user-'+msg.toid.id+'-'+msg.sendid.id
@@ -101,6 +103,7 @@ export default {
         let newArr = JSON.parse(localStorage[strKey])
         newArr.push(msg)
         localStorage[strKey] = JSON.stringify(newArr);
+        console.log(newArr)
 
         // 小红点显示
         let unreadUser = msg.toid.isgroup !=null?msg.toid.id:msg.sendid.id
@@ -126,7 +129,7 @@ export default {
     userObj:function(){
       let obj = {}
       this.users.forEach((item,index)=>{
-        obj[item.username] = item
+        obj[item.id] = item
       })
       return obj;
     }

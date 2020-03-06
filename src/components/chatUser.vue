@@ -54,6 +54,7 @@ export default {
         },
         getStorage(){
             let strKey = 'chat-user-'+this.$root.me.id+'-'+this.touser.id
+            console.log(localStorage[strKey])
             localStorage[strKey] = localStorage[strKey]?localStorage[strKey]:'[]'
             this.chatlist = JSON.parse(localStorage[strKey]) 
         },
