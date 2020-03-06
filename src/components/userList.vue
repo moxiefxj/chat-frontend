@@ -8,12 +8,21 @@
             <div class="headerimg"></div>
         </div>
         <div class="users">
-            <div @click="chooseUser(item)" class="useritem" v-for="(item, index) in friends" :key="index">
+            <div @click="chooseUser(item)" class="useritem" v-for="(item, index) in users" :key="'useritem'+index">
                 <div class="left" :class="{online:item.isonline=='true' ,unread:unreadlist.indexOf(item.id)!=-1}">
                     <img :src="item.headerimg">
                 </div>
                 <div class="right">
                     <span class="username">{{item.username}}</span>
+                    <span class="msg"></span>
+                </div>      
+            </div>
+            <div @click="chooseRoom(item)" class="useritem" v-for="(item, index) in room" :key="index">
+                <div class="left online" :class="{unread:unreadlist.indexOf(item.id)!=-1}">
+                    <img :src="item.headerimg">
+                </div>
+                <div class="right">
+                    <span class="username">{{item.groupname}}</span>
                     <span class="msg"></span>
                 </div>      
             </div>
@@ -23,16 +32,8 @@
 </template>
 <script>
 export default {
-    props:['islogin','users','chooseUser','unreadlist'],
-    computed: {
-        friends:function(){
-            let username = this.$root.me.username;
-            return this.users.filter((item,index)=>{
-                return item.username != username;
-            })
-        }
-        
-    },
+    props:['islogin','users','chooseUser','unreadlist','room','chooseRoom'],
+    
 }
 </script>
 

@@ -1,8 +1,8 @@
 <template>
   <div id="app">
     <choose-user v-if="$root.me == null" :userlist = 'userlist'></choose-user>
-    <user-list :islogin='islogin' :users='users' :chooseUser="chooseUser" v-if="$root.me !=null" :unreadlist = 'unreadlist'></user-list>
-    <chat-user v-if="ischat" :touser='touser' :closeChat="closeChat" :newMsg = 'newMsg'></chat-user>
+    <user-list :islogin='islogin' :users='users' :room = 'room' :chooseUser="chooseUser" :chooseRoom="chooseRoom" v-if="$root.me !=null" :unreadlist = 'unreadlist'></user-list>
+    <chat-user v-if="ischat" :touser='touser' :toroom='toroom' :closeChat="closeChat" :newMsg = 'newMsg'></chat-user>
   </div>
 </template>
 
@@ -27,8 +27,10 @@ export default {
       users:[],
       ischat:false,
       touser:null,
+      toroom:null,
       unreadlist:[],
       newMsg:null,
+      room:[],
 
     }
   },
@@ -42,7 +44,7 @@ export default {
     socket.on('login',(data)=>{
       if(data.state == 'ok'){
         this.islogin = true
-        socket.emit('users')
+        socket.emit('users',data.data)
       }
     })
     //监听登出事件
@@ -59,7 +61,12 @@ export default {
 
     // 获取用户列表
     socket.on('users',(data)=>{
+      console.log(data)
       this.users = data
+    })
+    socket.on('room',(data)=>{
+      this.room = data
+      console.log(data)
     })
 
     // 未读信息
@@ -116,6 +123,13 @@ export default {
   methods: {
     chooseUser: function(user){    
       this.touser = user
+      this.ischat = true
+      // 消除红点
+      let index = this.unreadlist.indexOf(user.id)
+      this.unreadlist.splice(index,1)
+    },
+    chooseRoom: function(room){    
+      this.toroom = room
       this.ischat = true
       // 消除红点
       let index = this.unreadlist.indexOf(user.id)

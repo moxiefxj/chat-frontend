@@ -1,6 +1,6 @@
 <template>
     <div class="chatuser">
-        <div class="header">
+        <div class="header" v-if="toroom == null">
             <span class='back' @click="closeChat()">&lt;</span>
             <div>{{touser.username}}</div>
         </div>
@@ -25,7 +25,7 @@
 import socket from '../socket'
 
 export default {
-    props:['touser','closeChat','newMsg'],
+    props:['touser','closeChat','newMsg','toroom'],
     data() {
         return {
             chatlist:[],
@@ -66,7 +66,7 @@ export default {
     // 挂载前修改信息为已读
     beforeMount() {
         this.getStorage()
-        
+        debugger
         // 挂载前修改信息为已读
         socket.emit('readMsg',{
             selfid:this.$root.me.id,
