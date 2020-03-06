@@ -9,7 +9,7 @@
         </div>
         <div class="users">
             <div @click="chooseUser(item)" class="useritem" v-for="(item, index) in friends" :key="index">
-                <div class="left" :class="{online:item.isonline=='true' ,unread:unreadlist.indexOf(item.username)!=-1}">
+                <div class="left" :class="{online:item.isonline=='true' ,unread:unreadlist.indexOf(item.id)!=-1}">
                     <img :src="item.headerimg">
                 </div>
                 <div class="right">
@@ -31,6 +31,7 @@ export default {
                 return item.username != username;
             })
         }
+        
     },
 }
 </script>

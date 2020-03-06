@@ -4,10 +4,10 @@
             <span class='back' @click="closeChat()">&lt;</span>
             <div>{{touser.username}}</div>
         </div>
-        <div class="chatlist">
-            <div class="chatItem" v-for="(item, index) in chatlist" :key="index" :class="{self:$root.me.username == item.sendname.username}">
+        <div class="chatlist" ref="chatbox">
+            <div class="chatItem" v-for="(item, index) in chatlist" :key="index" :class="{self:$root.me.id == item.sendid.id}">
                 <div class="header">
-                    <img :src="item.sendname.headerimg" alt="">
+                    <img :src="item.sendid.headerimg" alt="">
                 </div>
                 <div class="chatContent">
                     {{item.content}}
@@ -25,7 +25,7 @@
 import socket from '../socket'
 
 export default {
-    props:['touser','closeChat'],
+    props:['touser','closeChat','newMsg'],
     data() {
         return {
             chatlist:[],
@@ -35,12 +35,12 @@ export default {
     methods: {
         sendEvent:function(){
             let msg = {
-                sendname:this.$root.me,
-                toname:this.touser,
+                sendid:this.$root.me,
+                toid:this.touser,
                 content:this.inputData,
                 chattime:new Date().getTime(),
-            }
-            
+            } 
+            console.log(msg)
             // 发送到服务端
             socket.emit('sendMsg',msg)
             this.chatlist.push(msg)
@@ -49,19 +49,44 @@ export default {
         },
         // 保存到本地
         saveStorage(){
-            let strKey = 'chat-user-'+this.$root.me.username+'-'+this.touser.username
+            let strKey = 'chat-user-'+this.$root.me.id+'-'+this.touser.id
             localStorage[strKey] = JSON.stringify(this .chatlist) 
         },
         getStorage(){
-            let strKey = 'chat-user-'+this.$root.me.username+'-'+this.touser.username
+            let strKey = 'chat-user-'+this.$root.me.id+'-'+this.touser.id
             localStorage[strKey] = localStorage[strKey]?localStorage[strKey]:'[]'
             this.chatlist = JSON.parse(localStorage[strKey]) 
+        },
+        toBottom(){
+            let chatbox = this.$refs.chatbox
+            chatbox.scrollTop = chatbox.scrollHeight - chatbox.clientHeight
         }
     },
+    // 挂载前修改信息为已读
     beforeMount() {
         this.getStorage()
+        
+        // 挂载前修改信息为已读
+        socket.emit('readMsg',{
+            selfid:this.$root.me.id,
+            userid:this.touser.id
+        }) 
     },
-
+    //挂载完成后，消息列表显示在最低端
+    mounted() {
+        this.toBottom()       
+    },
+    // 新消息push
+    watch: {
+        newMsg:function(val){
+            this.chatlist.push(val)
+            this.saveStorage()
+        }
+    },
+    //更新完成后，消息列表显示在最低端
+    updated() {
+        this.toBottom()
+    },
 }
 </script>
 
