@@ -1,8 +1,9 @@
 <template>
   <div id="app">
     <choose-user v-if="$root.me == null" :userlist = 'userlist'></choose-user>
-    <user-list :islogin='islogin' :users='users' :chooseUser="chooseUser" v-if="$root.me !=null" :unreadlist = 'unreadlist'></user-list>
-    <chat-user v-if="ischat" :touser='touser' :closeChat="closeChat" :newMsg = 'newMsg'></chat-user>
+    <user-list :islogin='islogin' :users='users' :room = 'room' :chooseUser="chooseUser" :chooseRoom="chooseRoom" v-if="$root.me !=null" :unreadlist = 'unreadlist'></user-list>
+    <chat-user v-if="ischat&&touser != null" :touser='touser' :closeChat="closeChat" :newMsg = 'newMsg'></chat-user>
+    <chat-room v-if="ischat&&toroom != null" :toroom='toroom' :closeChat="closeChat" ></chat-room>
   </div>
 </template>
 
@@ -12,6 +13,7 @@ import userList from './components/userList'
 import axios from 'axios'
 import socket from './socket'
 import chatUser from './components/chatUser'
+import chatRoom from './components/chatRoom'
 
 export default {
   name: 'App',
@@ -29,6 +31,8 @@ export default {
       touser:null,
       unreadlist:[],
       newMsg:null,
+      newroomMsg:null,
+      room:[],
 
     }
   },
@@ -68,17 +72,21 @@ export default {
         // 设置未读的红点
         // 将聊天的内容分别添加到本地存储
         // 将sendid/toid改成由头像的对象
-        item.sendid = this.userObj[item.sendid]
-        item.toid = this.userObj[item.toid]
+        // item.sendid = this.userObj[item.sendid]
+        // item.toid = this.userObj[item.toid]
+
         this.unreadlist.push(item.sendid)
+
+        console.log(this.unreadlist)
         
-        let strKey = 'chat-user-'+this.$root.me.id+'-'+item.sendid.id
+        let strKey = 'chat-user-'+this.$root.me.id+'-'+item.sendid
         // 先解析本地存储的数据，在添加
         // 解析：JSON.parse(localStorage[strKey]).push(item);
         // console.log(localStorage[strKey])
         localStorage[strKey] = localStorage[strKey]?localStorage[strKey]:'[]'
         let newArr = JSON.parse(localStorage[strKey])
         newArr.push(item)
+        console.log(newArr)
         localStorage[strKey] = JSON.stringify(newArr);  
       });
     })
@@ -86,15 +94,15 @@ export default {
     socket.on('accept',(msg)=>{
       console.log(msg)
       // 判断是否在当前聊天页面且对象一致
-      if(this.ischat ==true && msg.sendid.id ==this.touser.id){
+      if(this.ischat ==true && msg.sendid ==this.touser.id){
         this.newMsg = msg
+        socket.emit('readMsg',{
+            selfid:this.$root.me.id         
+        })
       }
-      // else if(msg.toid.username == this.touser.username && msg.toid.isgroup=='true'){
-      //   this.newMsg = msg
-      // }
+      // 聊天对象不一致时
       else{
-
-        let strKey = 'chat-user-'+msg.toid.id+'-'+msg.sendid.id
+        let strKey = 'chat-user-'+msg.toid+'-'+msg.sendid
         // 先解析本地存储的数据，在添加
         // 解析：JSON.parse(localStorage[strKey]).push(item);
         localStorage[strKey] = localStorage[strKey]?localStorage[strKey]:'[]'
@@ -102,10 +110,15 @@ export default {
         newArr.push(msg)
         localStorage[strKey] = JSON.stringify(newArr);
 
-        // 小红点显示
-        let unreadUser = msg.toid.isgroup !=null?msg.toid.id:msg.sendid.id
-        // 修改未读状态   true 为群
-        this.unreadlist.push(unreadUser)
+        // 修改未读状态 
+        this.unreadlist.push(msg.sendid)
+
+      }
+    })
+
+    socket.on('acceptroom',(msg)=>{
+      // 判断聊天界面是否一致
+      if(this.ischat == true && msg.sendid == this.toroom.id){
 
       }
     })
@@ -114,9 +127,22 @@ export default {
     chooseUser: function(user){    
       this.touser = user
       this.ischat = true
+      console.log(user)
       // 消除红点
       let index = this.unreadlist.indexOf(user.id)
-      this.unreadlist.splice(index,1)
+      if(index >= 0){
+        this.unreadlist.splice(index,1)
+      }
+      
+    },  
+    chooseRoom: function(room){    
+      this.toroom = room
+      this.ischat = true
+      // 消除红点
+      let index = this.unreadlist.indexOf(room.id)
+      if(index >= 0){
+        this.unreadlist.splice(index,1)
+      }
     },
     closeChat:function(){
       this.ischat = false

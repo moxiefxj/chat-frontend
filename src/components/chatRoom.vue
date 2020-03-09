@@ -2,7 +2,7 @@
     <div class="chatuser">
         <div class="header">
             <span class='back' @click="closeChat()">&lt;</span>
-            <div>{{touser.username}}</div>
+            <div>{{toroom.groupname}}</div>
         </div>
         <div class="chatlist" ref="chatbox">
             <div class="chatItem" v-for="(item, index) in chatlist" :key="index" :class="{self:$root.me.id == item.sendid}">
@@ -25,7 +25,7 @@
 import socket from '../socket'
 
 export default {
-    props:['touser','closeChat','newMsg'],
+    props:['toroom','closeChat'],
     data() {
         return {
             chatlist:[],
@@ -37,24 +37,25 @@ export default {
             let msg = {
                 sendid:this.$root.me.id,
                 sendimg:this.$root.me.headerimg,
-                toid:this.touser.id,
-                toimg:this.touser.headerimg,
+                toid:this.toroom.id,
+                toimg:this.toroom.headerimg,
                 content:this.inputData,
                 chattime:new Date().getTime(),
             }
             // 发送到服务端
-            socket.emit('sendMsg',msg)
+            socket.emit('sendRoomMsg',msg)
             this.chatlist.push(msg)
             // 保存聊天记录到本地
             this.saveStorage()
         },
         // 保存到本地
         saveStorage(){
-            let strKey = 'chat-user-'+this.$root.me.id+'-'+this.touser.id
+            let strKey = 'chat-user-'+this.$root.me.id+'-'+this.toroom.id
             localStorage[strKey] = JSON.stringify(this .chatlist) 
         },
         getStorage(){
-            let strKey = 'chat-user-'+this.$root.me.id+'-'+this.touser.id
+            let strKey = 'chat-room-'+this.$root.me.id+'-'+this.toroom.id
+            console.log(localStorage[strKey])
             localStorage[strKey] = localStorage[strKey]?localStorage[strKey]:'[]'
             this.chatlist = JSON.parse(localStorage[strKey]) 
         },
