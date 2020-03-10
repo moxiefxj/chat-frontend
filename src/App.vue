@@ -19,6 +19,7 @@ export default {
     chooseUser,
     userList,
     chatUser,
+    chatRoom,
   },
   data() {
     return {
@@ -64,10 +65,12 @@ export default {
       console.log(data)
       this.users = data
     })
+    // 获取群列表
     socket.on('room',(data)=>{
       this.room = data
-      console.log(data)
+      
     })
+
 
     // 未读信息
     socket.on('unreadMsg',(data)=>{
@@ -90,6 +93,7 @@ export default {
       });
     })
 
+    // 个人消息
     socket.on('accept',(msg)=>{
       
       // 判断是否在当前聊天页面且对象一致
@@ -112,11 +116,22 @@ export default {
         localStorage[strKey] = JSON.stringify(newArr);
         console.log(newArr)
 
-        // 小红点显示
-        let unreadUser = msg.toid.isgroup !=null?msg.toid.id:msg.sendid.id
-        // 修改未读状态   true 为群
-        this.unreadlist.push(unreadUser)
+        // 修改未读状态 
+        this.unreadlist.push(msg.sendid)
 
+      }
+    })
+    // 群消息
+    socket.on('acceptroom',(msg)=>{
+      // 判断聊天界面是否一致
+      if(this.ischat == true && msg.sendid == this.toroom.id){
+        this.newroomMsg = msg
+        socket.emit('readMsg',{
+          selfid:this.$root.me.id
+        })
+      }
+      else{
+        
       }
     })
   },
