@@ -2,7 +2,7 @@
     <div class="chatuser">
         <div class="header">
             <span class='back' @click="closeChat()">&lt;</span>
-            <div>{{toroom.groupname}}</div>
+            <div>{{toroom.roomname}}</div>
         </div>
         <div class="chatlist" ref="chatbox">
             <div class="chatItem" v-for="(item, index) in chatlist" :key="index" :class="{self:$root.me.id == item.sendid}">
@@ -25,7 +25,7 @@
 import socket from '../socket'
 
 export default {
-    props:['toroom','closeChat'],
+    props:['toroom','closeChat','newroomMsg','unreadroomMsg'],
     data() {
         return {
             chatlist:[],
@@ -38,20 +38,24 @@ export default {
                 sendid:this.$root.me.id,
                 sendimg:this.$root.me.headerimg,
                 toid:this.toroom.id,
-                toimg:this.toroom.headerimg,
+                toimg:this.toroom.roomimg,
                 content:this.inputData,
                 chattime:new Date().getTime(),
             }
             // 发送到服务端
             socket.emit('sendRoomMsg',msg)
+            socket.emit('readroomMsg',{
+                selfid:this.$root.me.id,
+                toid:this.toroom.id         
+            })
             this.chatlist.push(msg)
             // 保存聊天记录到本地
             this.saveStorage()
         },
         // 保存到本地
         saveStorage(){
-            let strKey = 'chat-user-'+this.$root.me.id+'-'+this.toroom.id
-            localStorage[strKey] = JSON.stringify(this .chatlist) 
+            let strKey = 'chat-room-'+this.$root.me.id+'-'+this.toroom.id
+            localStorage[strKey] = JSON.stringify(this.chatlist) 
         },
         getStorage(){
             let strKey = 'chat-room-'+this.$root.me.id+'-'+this.toroom.id
@@ -67,9 +71,17 @@ export default {
     // 挂载前修改信息为已读
     beforeMount() {
         this.getStorage()
+        for(let i = 0 ; i < this.unreadroomMsg.length; i++){
+            if(this.unreadroomMsg[i].toroomid == this.toroom.id){
+                this.chatlist.push(this.unreadroomMsg[i])
+                this.unreadroomMsg.splice(i,1)
+                this.saveStorage()
+            }
+        }
         // 挂载前修改信息为已读
-        socket.emit('readMsg',{
-            selfid:this.$root.me.id         
+        socket.emit('readroomMsg',{
+            selfid:this.$root.me.id,
+            toid:this.toroom.id         
         })
          
     },
@@ -79,7 +91,7 @@ export default {
     },
     // 新消息push
     watch: {
-        newMsg:function(val){
+        newroomMsg:function(val){
             this.chatlist.push(val)
             this.saveStorage()
         }

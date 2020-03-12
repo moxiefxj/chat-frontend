@@ -9,7 +9,7 @@
         </div>
         <div class="users">
             <div @click="chooseUser(item)" class="useritem" v-for="(item, index) in users" :key="'useritem'+index">
-                <div class="left" :class="{online:item.isonline=='true' ,unread:unreadlist.indexOf(item.id)!=-1}">
+                <div class="left" :class="{online:item.isonline==1 ,unread:unreadlist.indexOf(item.id)!=-1}">
                     <img :src="item.headerimg">
                 </div>
                 <div class="right">
@@ -18,11 +18,11 @@
                 </div>      
             </div>
             <div @click="chooseRoom(item)" class="useritem" v-for="(item, index) in room" :key="index">
-                <div class="left online" :class="{unread:unreadlist.indexOf(item.id)!=-1}">
-                    <img :src="item.headerimg">
+                <div class="left online" :class="{unread:unreadroomlist.indexOf(item.id)!=-1}">
+                    <img :src="item.roomimg">
                 </div>
                 <div class="right">
-                    <span class="username">{{item.groupname}}</span>
+                    <span class="username">{{item.roomname}}</span>
                     <span class="msg"></span>
                 </div>      
             </div>
@@ -32,7 +32,7 @@
 </template>
 <script>
 export default {
-    props:['islogin','users','chooseUser','unreadlist','room','chooseRoom'],
+    props:['islogin','users','chooseUser','unreadlist','room','chooseRoom','unreadroomlist'],
     
 }
 </script>

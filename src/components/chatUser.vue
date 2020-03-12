@@ -1,6 +1,6 @@
 <template>
     <div class="chatuser">
-        <div class="header" v-if="toroom == null">
+        <div class="header">
             <span class='back' @click="closeChat()">&lt;</span>
             <div>{{touser.username}}</div>
         </div>
@@ -25,7 +25,7 @@
 import socket from '../socket'
 
 export default {
-    props:['touser','closeChat','newMsg','toroom'],
+    props:['touser','closeChat','newroomMsg','unreadMsg'],
     data() {
         return {
             chatlist:[],
@@ -66,10 +66,20 @@ export default {
     },
     // 挂载前修改信息为已读
     beforeMount() {
+        
         this.getStorage()
+        for(let i = 0 ; i < this.unreadMsg.length; i++){
+            if(this.unreadMsg[i].sendid == this.touser.id){
+                this.chatlist.push(this.unreadMsg[i])
+                this.unreadMsg.splice(i,1)
+                this.saveStorage()
+            }
+            
+        }
         // 挂载前修改信息为已读
         socket.emit('readMsg',{
-            selfid:this.$root.me.id         
+            sendid:this.touser.id ,
+            toid:this.$root.me.id,      
         })
          
     },
@@ -79,7 +89,7 @@ export default {
     },
     // 新消息push
     watch: {
-        newMsg:function(val){
+        newroomMsg:function(val){
             this.chatlist.push(val)
             this.saveStorage()
         }
